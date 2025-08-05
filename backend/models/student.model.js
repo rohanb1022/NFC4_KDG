@@ -15,6 +15,8 @@ const StudentSchema = new mongoose.Schema({
   dept: { type: String },
 
   degrees: [DegreeSchema],
+
+  institutes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Institute" }]
 });
 
 const Student = mongoose.model("Student", StudentSchema);

@@ -10,6 +10,7 @@ dotenv.config();
 // website routes
 import authRouter from "./routes/auth.route.js";
 import userRouter from "./routes/user.route.js";
+import instituteRoutes from "./routes/institute.route.js";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", userRouter);
+app.use("/api/institute", instituteRoutes);
 
 const port = process.env.PORT || 3000;
 async function main() {
