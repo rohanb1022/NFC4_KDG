@@ -213,3 +213,22 @@ export const issueCertificate = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const getStudentByWallet = async (req, res) => {
+  const { walletId } = req.params;
+  try {
+    const student = await Student.findOne({ walletId });
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    res.status(200).json({
+      name: student.name,
+      walletId: student.walletId,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching student by walletId:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
