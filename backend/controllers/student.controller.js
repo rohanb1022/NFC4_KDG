@@ -1,10 +1,10 @@
-import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import generateTokenAndSetCookie from "../utils/generateTokens.js";
+import Student from "../models/student.model.js";
 
 export async function signup(req, res) {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password,walletId} = req.body;
 
     // Validation checks
     if (!name || !email || !password) {
@@ -22,8 +22,8 @@ export async function signup(req, res) {
     }
 
     // Check if email already exists
-    const existingUserByEmail = await User.findOne({ email: email });
-    if (existingUserByEmail) {
+    const existingStudentByEmail = await Student.findOne({ email: email });
+    if (existingStudentByEmail) {
       return res
         .status(400)
         .json({ success: false, message: "Email already exists" });
@@ -42,17 +42,18 @@ export async function signup(req, res) {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Creating a new user without the Image field
-    const newUser = new User({
+    const newStudent = new Student({
       name: name,
       email: email,
       password: hashedPassword,
+      walletId: walletId,
     });
 
     // Generating token and setting cookie
-    generateTokenAndSetCookie(newUser._id, res);
+    generateTokenAndSetCookie(newStudent._id, res);
 
     // Saving the new user to the database
-    await newUser.save();
+    await newStudent.save();
 
     res.status(201).json({
       sucess: true,
@@ -76,15 +77,15 @@ export async function login(req, res) {
     }
 
     // Find user by email
-    const user = await User.findOne({ email: email });
-    if (!user) {
+    const student = await Student.findOne({ email: email });
+    if (!student) {
       return res
         .status(404)
         .json({ success: false, message: "Invalid credentials" });
     }
 
     // Check password match
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    const isPasswordCorrect = await bcrypt.compare(password, student.password);
     if (!isPasswordCorrect) {
       return res
         .status(404)
@@ -92,7 +93,7 @@ export async function login(req, res) {
     }
 
     // Generating token and setting cookie
-    generateTokenAndSetCookie(user._id, res);
+    generateTokenAndSetCookie(student._id, res);
 
     res.status(200).json({
       sucess: true,
@@ -120,7 +121,7 @@ export async function logout(req, res) {
 
 export const checkAuth = (req, res) => {
   try {
-    res.status(200).json(req.user);
+    res.status(200).json(req.student);
   } catch (error) {
     console.log("Error in checkAuth controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });

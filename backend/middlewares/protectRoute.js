@@ -1,40 +1,38 @@
 import jwt from "jsonwebtoken";
-import User from "../models/user.model.js";
-
 import dotenv from "dotenv";
+import Student from "../models/student.model.js";
+
 dotenv.config();
 
 const protectRoute = async (req, res, next) => {
   try {
-    const token = req.cookies["token"];
+    const token = req.cookies?.token;
 
     if (!token) {
       return res
-        .status(400)
-        .json({ success: false, message: "Unauthorized - No token" });
+        .status(401)
+        .json({ success: false, message: "Unauthorized - No token provided" });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (!decoded) {
+    if (!decoded || !decoded.id) {
       return res
         .status(401)
         .json({ success: false, message: "Unauthorized - Invalid token" });
     }
 
-    const user = await User.findById(decoded.userId).select("-password");
-
-    if (!user) {
-      console.warn("User not found for decoded token ID");
+    const student = await Student.findById(decoded.id).select("-password");
+    if (!student) {
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
     }
 
-    req.user = user; // Attach user to request
-    next(); // Proceed to the next middleware
+    req.student = student;
+    next();
   } catch (error) {
-    console.error("Error in protectRoute middleware:", error.message);
+    console.error("Error in protectRoute:", error.message);
     return res
       .status(500)
       .json({ success: false, message: "Internal server error" });
