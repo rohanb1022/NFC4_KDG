@@ -13,6 +13,12 @@ import { User, BookOpen, FileText, GraduationCap, Building, Upload } from "lucid
 export default function InstituteDashboard() {
   const [uploadStudentId, setUploadStudentId] = useState(null)
   const [selectedFile, setSelectedFile] = useState(null)
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [showCourseModal, setShowCourseModal] = useState(false)
+  const [newCourse, setNewCourse] = useState({
+    name: "",
+    department: "",
+  })
 
   const students = [
     { id: 1, name: "John Doe", degree: "B.Sc Computer Science", department: "Computer Science", status: "Active" },
@@ -26,6 +32,10 @@ export default function InstituteDashboard() {
     { id: 102, name: "Quantum Mechanics", department: "Physics", students: 32 },
     { id: 103, name: "Power Systems", department: "Electrical", students: 28 },
   ]
+
+  const filteredStudents = filterStatus === "All"
+    ? students
+    : students.filter((student) => student.status === filterStatus)
 
   // Handle file selection
   const handleFileChange = (e) => {
@@ -55,6 +65,18 @@ export default function InstituteDashboard() {
     }
     setUploadStudentId(null);
     setSelectedFile(null);
+  }
+
+  const handleCreateCourse = (e) => {
+    e.preventDefault()
+    courses.push({
+      id: Date.now(),
+      name: newCourse.name,
+      department: newCourse.department,
+    })
+    setShowCourseModal(false)
+    setNewCourse({ name: "", department: "" })
+    alert("Course created successfully!")
   }
 
   return (
@@ -100,29 +122,38 @@ export default function InstituteDashboard() {
             <h2 className="text-2xl font-semibold flex items-center gap-2">
               <User className="h-5 w-5 text-blue-400" /> Student Management
             </h2>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              Add New Student
-            </Button>
+            <div className="flex items-center gap-2">
+              <select
+                value={filterStatus}
+                onChange={e => setFilterStatus(e.target.value)}
+                className="bg-gray-800 text-white border border-gray-600 rounded px-2 py-1"
+              >
+                <option value="All">All</option>
+                <option value="Active">Active</option>
+                <option value="Pending">Pending</option>
+              </select>
+              
+            </div>
           </div>
           <div className="border border-gray-700 rounded-lg overflow-hidden">
             <Table className="bg-gray-900/50">
               <TableHeader className="bg-gray-800">
                 <TableRow>
-                  <TableHead className="text-gray-300">Name</TableHead>
-                  <TableHead className="text-gray-300">Degree</TableHead>
-                  <TableHead className="text-gray-300">Department</TableHead>
-                  <TableHead className="text-gray-300">Status</TableHead>
-                  <TableHead className="text-right text-gray-300">Actions</TableHead>
+                  <TableHead className="text-gray-300 text-left">Name</TableHead>
+                  <TableHead className="text-gray-300 text-left">Degree</TableHead>
+                  <TableHead className="text-gray-300 text-left">Department</TableHead>
+                  <TableHead className="text-gray-300 text-left">Status</TableHead>
+                  <TableHead className="text-gray-300 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {students.map((student) => (
+                {filteredStudents.map((student) => (
                   <React.Fragment key={student.id}>
                     <TableRow className="border-gray-700 hover:bg-gray-800/50">
-                      <TableCell className="font-medium text-gray-100">{student.name}</TableCell>
-                      <TableCell className="text-gray-300">{student.degree}</TableCell>
-                      <TableCell className="text-gray-300">{student.department}</TableCell>
-                      <TableCell>
+                      <TableCell className="font-medium text-gray-100 text-left">{student.name}</TableCell>
+                      <TableCell className="text-gray-300 text-left">{student.degree}</TableCell>
+                      <TableCell className="text-gray-300 text-left">{student.department}</TableCell>
+                      <TableCell className="text-left">
                         <span className={`px-2 py-1 rounded-full text-xs ${
                           student.status === "Active"
                             ? "bg-green-900/30 text-green-400"
@@ -131,18 +162,22 @@ export default function InstituteDashboard() {
                           {student.status}
                         </span>
                       </TableCell>
-                      <TableCell className="flex justify-end gap-2">
-                        <Button size="sm" className="gap-1 bg-blue-600 hover:bg-blue-700">
-                          <FileText className="h-4 w-4" /> Details
+                      <TableCell className="flex justify-end gap-2 text-right">
+                        <Button
+                          size="sm"
+                          className="gap-1 bg-blue-600 hover:bg-blue-700 text-white"
+                          onClick={() => alert(`Details for ${student.name}`)}
+                        >
+                          <FileText className="h-4 w-4" /> <span className="ml-1">Details</span>
                         </Button>
                         <Button
                           size="sm"
-                          className="gap-1 bg-green-600 hover:bg-green-700"
+                          className="gap-1 bg-green-600 hover:bg-green-700 text-white"
                           onClick={() => setUploadStudentId(student.id)}
                         >
-                          <GraduationCap className="h-4 w-4" /> Give Degree
+                          <GraduationCap className="h-4 w-4" /> <span className="ml-1">Give Degree</span>
                         </Button>
-                        <Button variant="destructive" size="sm" className="gap-1">
+                        <Button variant="destructive" size="sm" className="gap-1 text-white">
                           Revoke
                         </Button>
                       </TableCell>
@@ -159,11 +194,11 @@ export default function InstituteDashboard() {
                             />
                             <Button
                               size="sm"
-                              className="gap-1 bg-blue-600 hover:bg-blue-700"
+                              className="gap-1 bg-blue-600 hover:bg-blue-700 text-white"
                               onClick={handleUpload}
                               disabled={!selectedFile}
                             >
-                              <Upload className="h-4 w-4" /> Upload PDF/Certificate
+                              <Upload className="h-4 w-4" /> <span className="ml-1">Upload PDF/Certificate</span>
                             </Button>
                             <Button
                               size="sm"
@@ -193,32 +228,81 @@ export default function InstituteDashboard() {
             <h2 className="text-2xl font-semibold flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-purple-400" /> Course Management
             </h2>
-            <Button className="bg-purple-600 hover:bg-purple-700">
+            <Button
+              className="bg-purple-600 hover:bg-purple-700"
+              onClick={() => setShowCourseModal(true)}
+            >
               Create New Course
             </Button>
           </div>
+          {/* Modal for creating a course */}
+          {showCourseModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <form
+                className="bg-gray-900 border border-gray-700 rounded-lg p-8 flex flex-col gap-4 w-full max-w-md"
+                onSubmit={handleCreateCourse}
+              >
+                <h3 className="text-xl font-semibold mb-2 text-purple-400">Create New Course</h3>
+                <label className="text-gray-300">
+                  Course Name
+                  <input
+                    type="text"
+                    required
+                    value={newCourse.name}
+                    onChange={e => setNewCourse({ ...newCourse, name: e.target.value })}
+                    className="mt-1 w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"
+                  />
+                </label>
+                <label className="text-gray-300">
+                  Department
+                  <input
+                    type="text"
+                    required
+                    value={newCourse.department}
+                    onChange={e => setNewCourse({ ...newCourse, department: e.target.value })}
+                    className="mt-1 w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"
+                  />
+                </label>
+                <div className="flex gap-2 justify-end mt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-gray-600 text-gray-200 hover:bg-gray-700"
+                    onClick={() => setShowCourseModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    Create
+                  </Button>
+                </div>
+              </form>
+            </div>
+          )}
           <div className="border border-gray-700 rounded-lg overflow-hidden">
             <Table className="bg-gray-900/50">
               <TableHeader className="bg-gray-800">
                 <TableRow>
-                  <TableHead className="text-gray-300">Course Name</TableHead>
-                  <TableHead className="text-gray-300">Department</TableHead>
-                  <TableHead className="text-gray-300">Students Enrolled</TableHead>
-                  <TableHead className="text-right text-gray-300">Actions</TableHead>
+                  <TableHead className="text-gray-300 text-left">Course Name</TableHead>
+                  <TableHead className="text-gray-300 text-left">Department</TableHead>
+                  <TableHead className="text-gray-300 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {courses.map((course) => (
                   <TableRow key={course.id} className="border-gray-700 hover:bg-gray-800/50">
-                    <TableCell className="font-medium text-gray-100">{course.name}</TableCell>
-                    <TableCell className="text-gray-300">{course.department}</TableCell>
-                    <TableCell className="text-gray-300">{course.students}</TableCell>
-                    <TableCell className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" className="gap-1 border-gray-600 text-gray-200 hover:bg-gray-700">
-                        <Upload className="h-4 w-4" /> Upload Material
-                      </Button>
-                      <Button variant="outline" size="sm" className="gap-1 border-gray-600 text-gray-200 hover:bg-gray-700">
-                        <FileText className="h-4 w-4" /> Details
+                    <TableCell className="font-medium text-gray-100 text-left">{course.name}</TableCell>
+                    <TableCell className="text-gray-300 text-left">{course.department}</TableCell>
+                    <TableCell className="flex justify-end gap-2 text-right">
+                      <Button
+                        size="sm"
+                        className="gap-1 bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={() => alert(`Details for ${course.name}`)}
+                      >
+                        <FileText className="h-4 w-4" /> <span className="ml-1">Details</span>
                       </Button>
                     </TableCell>
                   </TableRow>
