@@ -1,3 +1,4 @@
+import { hash } from "bcrypt";
 import mongoose from "mongoose";
 
 const CourseSchema = new mongoose.Schema({
@@ -13,6 +14,12 @@ const CourseSchema = new mongoose.Schema({
   },
   link: { type: String },
   studentWallet: { type: String, required: true }, 
+  fileUrl: { type: String },
+  hash: { type: String },
+  SolaxaTx: { type: String },
+  issueDate: { type: Date },
+  expiryDate: { type: Date },
+  
 });
 
 const Course = mongoose.model("Course", CourseSchema);

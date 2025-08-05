@@ -30,7 +30,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", userRouter);
-app.use("/api/institute", instituteRoutes);
+app.use("/api/v1/institute", instituteRoutes);
 
 const port = process.env.PORT || 3000;
 async function main() {

@@ -1,14 +1,20 @@
 import express from "express";
 import protectRoute from "../middlewares/protectRoute.js";
 import Course from "../models/Course.model.js";
+import { login, logout, signup , checkAuth } from "../controllers/student.controller.js";
 import crypto from "crypto";
 
 const router = express.Router();
 
 // Test Route
-router.get("/", protectRoute, (req, res) => {
+router.get("/", (req, res) => {
   res.send("This is a User Route");
 });
+
+router.post("/login", login);
+router.post("/signup", signup);
+router.post("/logout", logout);
+router.get("/authUser" ,checkAuth);
 
 // Get all courses by walletId
 router.get("/get-all/:walletId", protectRoute, async (req, res) => {
