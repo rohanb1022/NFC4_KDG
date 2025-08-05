@@ -1,42 +1,56 @@
-import React from 'react';
+import React, { useState } from "react";
+import { useAuthStore } from "../store/useAuthStore.js";
 
 const StudentLogin = () => {
-  return (
-    <form style={styles.form}>
-      <input style={styles.input} placeholder="email" />
-      <input style={styles.input} type="password" placeholder="password" />
-      <div className="flex justify-center">
-          <button className="py-2 px-6 border border-white rounded-lg text-white text-sm hover:bg-white hover:text-black transition-all duration-200">
-            Connect
-          </button>
-        </div>
+  const { studentLogin } = useAuthStore();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-      <button style={styles.submitBtn}>Submit</button>
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const result = await studentLogin(formData);
+    if (!result.success) {
+      alert(result.message);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <input
+        name="email"
+        placeholder="Email"
+        value={formData.email}
+        onChange={handleChange}
+        className="p-2 rounded border border-white bg-transparent text-white"
+      />
+      <input
+        name="password"
+        type="password"
+        placeholder="Password"
+        value={formData.password}
+        onChange={handleChange}
+        className="p-2 rounded border border-white bg-transparent text-white"
+      />
+      <button
+        type="submit"
+        className="py-2 px-4 bg-white text-black rounded hover:bg-gray-200 transition"
+      >
+        Connect
+      </button>
+      <button
+        type="submit"
+        className="py-2 px-4 bg-white text-black rounded hover:bg-gray-200 transition"
+      >
+        Submit
+      </button>
     </form>
   );
-};
-
-const styles = {
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-  input: {
-    padding: '10px',
-    borderRadius: '8px',
-    border: '1px solid white',
-    backgroundColor: 'transparent',
-    color: '#fff',
-  },
-  submitBtn: {
-    padding: '10px',
-    backgroundColor: 'white',
-    color: '#000',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-  },
 };
 
 export default StudentLogin;
