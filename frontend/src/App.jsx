@@ -1,16 +1,14 @@
 import './App.css'
-import { Button } from "@/components/ui/button"
+import AuthPage from './pages/AuthPage'
+import { Routes, Route, Navigate } from "react-router-dom";
 
 function App() {
   return (
-    <>
-       <h1 class="text-3xl font-bold text-amber-500 underline">
-    Hello world!
-  </h1>
-  <div className="flex min-h-svh flex-col items-center justify-center">
-      <Button>Click me</Button>
+    <div>
+      <Routes>
+         <Route path="/auth" element={ <AuthPage />} />
+      </Routes>
     </div>
-    </>
   )
 }
 
