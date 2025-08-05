@@ -7,6 +7,7 @@ dotenv.config();
 const protectRoute = async (req, res, next) => {
   try {
     const token = req.cookies?.token;
+    console.log("Token received:", token);
 
     if (!token) {
       return res
@@ -16,7 +17,7 @@ const protectRoute = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (!decoded || !decoded.id) {
+    if (!decoded) {
       return res
         .status(401)
         .json({ success: false, message: "Unauthorized - Invalid token" });

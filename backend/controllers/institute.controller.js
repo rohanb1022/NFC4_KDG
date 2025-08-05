@@ -1,12 +1,12 @@
 import Student from "../models/student.model.js";
-import Course from "../models/Course.model.js";
-import Institute from "../models/institute.model.js";
+import Course from "../models/course.model.js";
 import fs from "fs";
 import crypto from "crypto";
-import { uploadToIPFS } from "../utils/uploadToIPFS.js";
+import { uploadToIPFS } from "../utils/ipfsUpload.js";
 import { storeHashOnSolana } from "../solana/storeHash.js";
 import bcrypt from "bcrypt";
 import generateTokenAndSetCookie from "../utils/generateTokens.js";
+import Institute from "../models/institute.model.js";
 
 
 
@@ -60,7 +60,7 @@ export async function signup(req, res) {
     generateTokenAndSetCookie(Institute._id, res);
 
     // Saving the new user to the database
-    await Institute.save();
+    await newInstitute.save();
 
     res.status(201).json({
       sucess: true,
@@ -76,35 +76,32 @@ export async function login(req, res) {
   try {
     const { email, password } = req.body;
 
-    // Validation checks
     if (!email || !password) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
     }
 
-    // Find Institute by email
-    const Institute = await Institute.findOne({ email: email });
-    if (!Institute) {
+    // ✅ Use lowercase variable name to avoid shadowing
+    const institute = await Institute.findOne({ email: email });
+    if (!institute) {
       return res
         .status(404)
         .json({ success: false, message: "Invalid credentials" });
     }
 
-    // Check password match
-    const isPasswordCorrect = await bcrypt.compare(password, student.password);
+    const isPasswordCorrect = await bcrypt.compare(password, institute.password);
     if (!isPasswordCorrect) {
       return res
         .status(404)
         .json({ success: false, message: "Invalid credentials" });
     }
 
-    // Generating token and setting cookie
-    generateTokenAndSetCookie(Institute._id, res);
+    const token = generateTokenAndSetCookie(institute._id, res);
 
     res.status(200).json({
-      sucess: true,
-      message: "Institute admin Logged in successfully",
+      success: true,
+      message: `Institute admin Logged in successfully ${token}`,
     });
   } catch (error) {
     console.log("Error in login controller:", error.message);
@@ -146,36 +143,68 @@ export const getAllStudents = async (req, res) => {
   }
 };
 
-// @desc   Issue certificate to a student
-export const issueCertificate = async (req, res) => {
-  try {
-    const { wallet } = req.body;
-    const student = await Student.findOne({ wallet });
 
-    if (!student) {
-      return res.status(404).json({ message: "Student not found" });
+export const issueCertificate = async (req, res) => {
+    console.log("req.file:", req.file);
+console.log("req.body:", req.body);
+  try {
+    const {
+      walletId,
+      name, // course name
+      studentName,
+      startDate,
+      endDate,
+      issueDate,
+      expiryDate
+    } = req.body;
+
+    console.log("Received data:", {
+      walletId,
+      name,
+      studentName,
+      startDate,
+      endDate,
+      issueDate,
+      expiryDate
+    });
+    
+    // Validate student exists by finding walletId
+    const student = await Student.findById({walletId});
+    if (!student) return res.status(404).json({ message: "Student not found" });
+
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const buffer = fs.readFileSync(req.file.path);
+    // Hash the uploaded PDF
+    const buffer = req.file.buffer;
     const hash = crypto.createHash("sha256").update(buffer).digest("hex");
-    const fileUrl = await uploadToIPFS(req.file.path);
+
+    // Upload file to IPFS (Pinata)
+    const fileUrl = await uploadToIPFS(buffer, req.file.originalname);
+
+    // Store hash on Solana blockchain
     const solanaTx = await storeHashOnSolana(hash);
 
-    const cert = await Course.create({
-      studentWallet: wallet,
-      name: student.name,
-      degree: student.degree,
-      department: student.department,
-      issueDate: student.startDate,
-      expiryDate: student.endDate,
+    // Save certificate as a new course (or cert) document
+    const course = await Course.create({
+      name,
+      description: `Certificate for ${studentName}`,
+      degree: "", // optional, you can pass this if needed
+      startDate,
+      endDate,
+      issueDate,
+      expiryDate,
+      studentWallet: walletId,
       fileUrl,
       hash,
       solanaTx,
+      isShareable: false
     });
 
-    res.json(cert);
-  } catch (err) {
-    console.error("❌ Error issuing certificate:", err);
-    res.status(500).json({ message: "Server error while issuing certificate" });
+    res.status(200).json({ message: "Certificate issued successfully", course });
+  } catch (error) {
+    console.error("❌ Error issuing certificate:", error.message);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

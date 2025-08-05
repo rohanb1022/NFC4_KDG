@@ -2,10 +2,11 @@
 import express from "express";
 import multer from "multer";
 import protectRoute from "../middlewares/protectRoute.js";
-import { getAllStudents, issueCertificate } from "../controllers/institute.controller.js";
+import { checkAuth, getAllStudents, issueCertificate, login, logout, signup } from "../controllers/institute.controller.js";
 
 const router = express.Router();
-const upload = multer({ dest: "uploads/" });
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 router.get("/", (req, res) => {
   res.send("This is a Instructor Route");
@@ -20,6 +21,6 @@ router.get("/authUser" ,checkAuth);
 router.get("/all", getAllStudents);
 
 // POST issue certificate
-router.post("/issue", protectRoute, upload.single("file"), issueCertificate);
+router.post("/issue", upload.single("file"), issueCertificate);
 
 export default router;

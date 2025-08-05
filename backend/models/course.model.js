@@ -1,4 +1,3 @@
-import { hash } from "bcrypt";
 import mongoose from "mongoose";
 
 const CourseSchema = new mongoose.Schema({
@@ -13,14 +12,17 @@ const CourseSchema = new mongoose.Schema({
     to: { type: Date },
   },
   link: { type: String },
+
+  studentName: { type: String, required: true },
   studentWallet: { type: String, required: true }, 
+
   fileUrl: { type: String },
   hash: { type: String },
-  SolaxaTx: { type: String },
+  solanaTx: { type: String }, // fixed typo from SolaxaTx
   issueDate: { type: Date },
   expiryDate: { type: Date },
-  
 });
 
-const Course = mongoose.model("Course", CourseSchema);
+// ✅ Prevent OverwriteModelError
+const Course = mongoose.models.Course || mongoose.model("Course", CourseSchema);
 export default Course;
