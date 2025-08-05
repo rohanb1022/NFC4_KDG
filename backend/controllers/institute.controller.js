@@ -7,6 +7,7 @@ import { storeHashOnSolana } from "../solana/storeHash.js";
 import bcrypt from "bcrypt";
 import generateTokenAndSetCookie from "../utils/generateTokens.js";
 import Institute from "../models/institute.model.js";
+import { chunkAndStorePDF } from "../utils/chunkAndStorePDF.js";
 
 
 export async function signup(req, res) {
@@ -175,6 +176,20 @@ export const issueCertificate = async (req, res) => {
     if (!req.file || !req.file.buffer) {
       return res.status(400).json({ message: "No file uploaded" });
     }
+
+    // ✅ Step 1: Chunk + store in vector DB
+    console.log("🔄 Starting PDF chunking...");
+    const { chunkTexts, collectionName, totalChunks, chunks } = await chunkAndStorePDF(
+      req.file.buffer,
+      walletId
+    );
+    
+    console.log("✅ PDF chunks created:");
+    console.log(`📊 Collection Name: ${collectionName}`);
+    //console.log(`📊 Total Chunks: ${totalChunks}`);
+    //console.log(`📊 Chunk Texts:`, chunkTexts);
+    //console.log(`📊 Original Chunks:`, chunks);
+
 
     // ✅ Hash the uploaded PDF
     const buffer = req.file.buffer;
