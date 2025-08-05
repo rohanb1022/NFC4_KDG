@@ -21,6 +21,8 @@ const CourseSchema = new mongoose.Schema({
   solanaTx: { type: String }, // fixed typo from SolaxaTx
   issueDate: { type: Date },
   expiryDate: { type: Date },
+  solanaCertAddress: { type: String }
+
 });
 
 // ✅ Prevent OverwriteModelError

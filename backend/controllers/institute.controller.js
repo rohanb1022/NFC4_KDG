@@ -9,7 +9,6 @@ import generateTokenAndSetCookie from "../utils/generateTokens.js";
 import Institute from "../models/institute.model.js";
 
 
-
 export async function signup(req, res) {
   try {
     const { name, email, password} = req.body;
@@ -145,8 +144,6 @@ export const getAllStudents = async (req, res) => {
 
 
 export const issueCertificate = async (req, res) => {
-    console.log("req.file:", req.file);
-console.log("req.body:", req.body);
   try {
     const {
       walletId,
@@ -167,31 +164,33 @@ console.log("req.body:", req.body);
       issueDate,
       expiryDate
     });
-    
-    // Validate student exists by finding walletId
-const student = await Student.findOne({ walletId });
-if (!student) return res.status(404).json({ message: "Student not found" });
 
+    // ✅ Validate student exists
+    const student = await Student.findOne({ walletId });
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
 
+    // ✅ Validate uploaded file
     if (!req.file || !req.file.buffer) {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    // Hash the uploaded PDF
+    // ✅ Hash the uploaded PDF
     const buffer = req.file.buffer;
     const hash = crypto.createHash("sha256").update(buffer).digest("hex");
 
-    // Upload file to IPFS (Pinata)
+    // ✅ Upload file to IPFS
     const fileUrl = await uploadToIPFS(buffer, req.file.originalname);
 
-    // Store hash on Solana blockchain
-    const solanaTx = await storeHashOnSolana(hash);
+    // ✅ Store hash on Solana
+    const { tx, certAccount } = await storeHashOnSolana(hash, name, walletId);
 
-    // Save certificate as a new course (or cert) document
+    // ✅ Save to MongoDB
     const course = await Course.create({
       name,
       description: `Certificate for ${studentName}`,
-      degree: "", // optional, you can pass this if needed
+      degree: "",
       startDate,
       endDate,
       studentName,
@@ -200,13 +199,17 @@ if (!student) return res.status(404).json({ message: "Student not found" });
       studentWallet: walletId,
       fileUrl,
       hash,
-      solanaTx,
+      solanaTx: tx,
+      solanaCertAddress: certAccount,
       isShareable: false
     });
 
-    res.status(200).json({ message: "Certificate issued successfully", course });
+    res.status(200).json({
+      message: "Certificate issued successfully",
+      course
+    });
   } catch (error) {
-    console.error("❌ Error issuing certificate:", error.message);
+    console.error("❌ Error issuing certificate:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
