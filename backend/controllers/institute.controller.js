@@ -185,11 +185,43 @@ export const issueCertificate = async (req, res) => {
     );
     
     console.log("✅ PDF chunks created:");
-    console.log(`📊 Collection Name: ${collectionName}`);
+    //console.log(`📊 Collection Name: ${collectionName}`);
     //console.log(`📊 Total Chunks: ${totalChunks}`);
     //console.log(`📊 Chunk Texts:`, chunkTexts);
-    //console.log(`📊 Original Chunks:`, chunks);
+    console.log(`📊 Original Chunks:`, chunks);
 
+    // ✅ Step 2: send data chunks to n8n for processing
+    console.log("🔄 Sending chunks to n8n for processing...");
+    try {
+      const n8nResponse = await fetch("https://pakhu.app.n8n.cloud/webhook-test/4bbe899c-26b5-41db-8d3d-bfe7c6c06a22", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chunks: chunks,
+        })
+      });
+
+      const n8nResult = await n8nResponse.json();
+      console.log("📊 n8n Response:", n8nResult);
+
+      if (!n8nResult.success && n8nResult.success !== true) {
+        return res.status(400).json({ 
+          message: "Certificate validation failed", 
+          error: "n8n processing returned false",
+          n8nResult: n8nResult 
+        });
+      }
+
+      console.log("✅ n8n processing successful, continuing with certificate issuance...");
+    } catch (n8nError) {
+      console.error("❌ Error calling n8n webhook:", n8nError);
+      return res.status(500).json({ 
+        message: "Failed to validate certificate with n8n", 
+        error: n8nError.message 
+      });
+    }
 
     // ✅ Hash the uploaded PDF
     const buffer = req.file.buffer;
