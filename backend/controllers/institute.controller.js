@@ -169,8 +169,9 @@ console.log("req.body:", req.body);
     });
     
     // Validate student exists by finding walletId
-    const student = await Student.findById({walletId});
-    if (!student) return res.status(404).json({ message: "Student not found" });
+const student = await Student.findOne({ walletId });
+if (!student) return res.status(404).json({ message: "Student not found" });
+
 
     if (!req.file || !req.file.buffer) {
       return res.status(400).json({ message: "No file uploaded" });
@@ -193,6 +194,7 @@ console.log("req.body:", req.body);
       degree: "", // optional, you can pass this if needed
       startDate,
       endDate,
+      studentName,
       issueDate,
       expiryDate,
       studentWallet: walletId,
