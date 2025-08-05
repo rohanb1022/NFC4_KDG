@@ -74,4 +74,5 @@ router.post("/revoke/:courseId", protectRoute, async (req, res) => {
   }
 });
 
+
 export default router;

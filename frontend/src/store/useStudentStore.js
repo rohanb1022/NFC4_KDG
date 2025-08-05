@@ -6,11 +6,82 @@ export const useStudentStore = create((set) => ({
   loading: false,
   error: null,
   sharedLink: null,
+  user: null,
+  authLoading: false,
 
+  // AUTH: Check if user is logged in
+  checkAuth: async () => {
+    set({ authLoading: true });
+    try {
+      const response = await axios.get("/api/v1/user/authUser", {
+        withCredentials: true,
+      });
+      set({ user: response.data, authLoading: false });
+    } catch (error) {
+      console.error("Auth check failed:", error);
+      set({ user: null, authLoading: false });
+    }
+  },
+
+  // AUTH: Login
+  login: async (formData) => {
+    set({ authLoading: true, error: null });
+    try {
+      const response = await axios.post("/user/login", formData, {
+        withCredentials: true,
+      });
+      set({ user: response.data, authLoading: false });
+    } catch (error) {
+      console.error("Login failed:", error);
+      set({
+        user: null,
+        authLoading: false,
+        error: error?.response?.data?.message || "Login failed",
+      });
+    }
+  },
+
+  // AUTH: Signup
+  signup: async (formData) => {
+    set({ authLoading: true, error: null });
+    try {
+      const response = await axios.post("/api/v1/user/signup", formData, {
+        withCredentials: true,
+      });
+      set({ user: response.data, authLoading: false });
+    } catch (error) {
+      console.error("Signup failed:", error);
+      set({
+        user: null,
+        authLoading: false,
+        error: error?.response?.data?.message || "Signup failed",
+      });
+    }
+  },
+
+  // AUTH: Logout
+  logout: async () => {
+    set({ authLoading: true });
+    try {
+      await axios.post(
+        "/api/v1/user/logout",
+        {},
+        {
+          withCredentials: true,
+        }
+      );
+      set({ user: null, authLoading: false });
+    } catch (error) {
+      console.error("Logout failed:", error);
+      set({ authLoading: false });
+    }
+  },
+
+  // Fetch courses by student wallet ID
   fetchCertificates: async (walletId) => {
     set({ loading: true, error: null });
     try {
-      const response = await axios.get(`/api/student/get-all/${walletId}`, {
+      const response = await axios.get(`/api/v1/user/get-all/${walletId}`, {
         withCredentials: true,
       });
       set({ certificates: response.data, loading: false });
@@ -24,17 +95,16 @@ export const useStudentStore = create((set) => ({
     }
   },
 
+  // Share a course
   shareCertificate: async (courseId, expiresIn) => {
     set({ loading: true, error: null });
     try {
       const response = await axios.post(
-        `/api/student/share/${courseId}`,
+        `/api/v1/user/share/${courseId}`,
         { expiresIn },
         { withCredentials: true }
       );
       const { link } = response.data;
-
-      // Update the certificate in the list (optional step)
       set((state) => ({
         certificates: state.certificates.map((cert) =>
           cert._id === courseId
@@ -58,11 +128,12 @@ export const useStudentStore = create((set) => ({
     }
   },
 
+  // Revoke shared access
   revokeCertificate: async (courseId) => {
     set({ loading: true, error: null });
     try {
       await axios.post(
-        `/api/student/revoke/${courseId}`,
+        `/api/v1/user/revoke/${courseId}`,
         {},
         { withCredentials: true }
       );
