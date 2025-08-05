@@ -1,11 +1,9 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
-
-import connectDB from "./config/db.js";
-
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -32,7 +30,23 @@ app.get("/", (req, res) => {
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", userRouter);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Backend Server is working on http://localhost:${PORT}`);
-});
+const port = process.env.PORT || 3000;
+async function main() {
+  try {
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URL is not defined in environment variables");
+    }
+
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("MongoDB Connection successful");
+
+    app.listen(port, () => {
+      console.log(`Server running at http://localhost:${port}`);
+    });
+  } catch (err) {
+    console.error("Error:", err.message);
+    process.exit(1);
+  }
+}
+
+main();
