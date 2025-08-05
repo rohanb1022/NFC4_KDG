@@ -33,6 +33,7 @@ import AuthPage from "./pages/AuthPage";
 import StudentDashboard from "./pages/StudentDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import { useAuthStore } from "./store/useAuthStore";
+import Employer from "./pages/Employer";
 
 export default function App() {
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ export default function App() {
         }
       }
     } else {
-      if (!location.pathname.startsWith('/auth')) {
+      if (!location.pathname.startsWith('/auth') && !location.pathname.startsWith('/Employer')) {
         navigate('/auth');
       }
     }
@@ -87,7 +88,10 @@ export default function App() {
           }
         />
         <Route path="*" element={<Navigate to="/auth" />} />
-      </Routes>
+
+      {/* Public Route */}
+          <Route path="/Employer/*" element={<Employer />} />
+        </Routes>
     </>
   );
 }
