@@ -1,4 +1,3 @@
-// /* eslint-disable no-unused-vars */
 // import {
 //   Table,
 //   TableBody,
@@ -6,22 +5,29 @@
 //   TableHead,
 //   TableHeader,
 //   TableRow,
-// } from "@/components/ui/table"
-// import { Button } from "@/components/ui/button"
-// import { Eye, Share2, BookOpen, Users } from "lucide-react"
+// } from "@/components/ui/table";
+// import { Button } from "@/components/ui/button";
+// import { Eye, Share2, BookOpen, Users } from "lucide-react";
+// import { useEffect } from "react";
+// import { useStudentStore } from "../store/useStudentStore";
 
 // export default function StudentDashboard() {
-//   const courses = [
-//     { id: 1, name: "Introduction to Computer Science", instructor: "Dr. Smith" },
-//     { id: 2, name: "Data Structures and Algorithms", instructor: "Prof. Johnson" },
-//     { id: 3, name: "Web Development Fundamentals", instructor: "Dr. Lee" },
-//     { id: 4, name: "Database Management Systems", instructor: "Prof. Brown" },
-//   ]
+//   const {
+//     certificates,
+//     fetchCertificates,
+//     user,
+//     loading,
+//     shareCertificate,
+//     revokeCertificate,
+//   } = useStudentStore();
 
-//   const sharedCourses = [
-//     { id: 101, name: "Calculus I", sharedBy: "Alice" },
-//     { id: 102, name: "Physics Lab", sharedBy: "Bob" },
-//   ]
+//   useEffect(() => {
+//     if (user?.walletId) {
+//       fetchCertificates(user.walletId);
+//     }
+//   }, [user?.walletId, fetchCertificates]);
+
+//   const sharedCertificates = certificates.filter((cert) => cert.isShareable);
 
 //   return (
 //     <div className="min-h-screen w-full bg-[#f8fafc] p-6 text-gray-900">
@@ -29,11 +35,12 @@
 //         {/* Header */}
 //         <header className="mb-8 flex items-center justify-between">
 //           <div>
-//           <h1 className="text-4xl font-light tracking-tight mb-2 text-gray-800">Student Dashboard</h1>
-//           <p className="text-gray-500 text-2xl">Welcome back! Here are your current courses</p>
-//           </div>
-//           <div>
-              
+//             <h1 className="text-4xl font-light tracking-tight mb-2 text-gray-800">
+//               Student Dashboard
+//             </h1>
+//             <p className="text-gray-500 text-2xl">
+//               Welcome back! Here are your current courses
+//             </p>
 //           </div>
 //         </header>
 
@@ -46,7 +53,7 @@
 //               </div>
 //               <div>
 //                 <h3 className="text-gray-500">My Courses</h3>
-//                 <p className="text-2xl font-bold text-gray-800">{courses.length}</p>
+//                 <p className="text-2xl font-bold text-gray-800">{certificates.length}</p>
 //               </div>
 //             </div>
 //           </div>
@@ -57,7 +64,7 @@
 //               </div>
 //               <div>
 //                 <h3 className="text-gray-500">Shared Courses</h3>
-//                 <p className="text-2xl font-bold text-gray-800">{sharedCourses.length}</p>
+//                 <p className="text-2xl font-bold text-gray-800">{sharedCertificates.length}</p>
 //               </div>
 //             </div>
 //           </div>
@@ -69,7 +76,10 @@
 //             <h2 className="text-2xl font-semibold flex items-center gap-2 text-gray-800">
 //               <BookOpen className="h-5 w-5 text-blue-600" /> My Courses
 //             </h2>
-//             <Button variant="outline" className="border-gray-300 hover:bg-gray-50 text-gray-700">
+//             <Button
+//               variant="outline"
+//               className="border-gray-300 hover:bg-gray-50 text-gray-700"
+//             >
 //               View All
 //             </Button>
 //           </div>
@@ -84,18 +94,36 @@
 //                 </TableRow>
 //               </TableHeader>
 //               <TableBody>
-//                 {courses.map((course, index) => (
-//                   <TableRow key={course.id} className="hover:bg-gray-50">
-//                     <TableCell className="font-medium text-gray-800">{index + 1}</TableCell>
-//                     <TableCell className="text-gray-800">{course.name}</TableCell>
-//                     <TableCell className="text-gray-600">{course.instructor}</TableCell>
+//                 {certificates.map((course, index) => (
+//                   <TableRow key={course._id} className="hover:bg-gray-50">
+//                     <TableCell className="font-medium text-gray-800">
+//                       {index + 1}
+//                     </TableCell>
+//                     <TableCell className="text-gray-800">{course.courseName}</TableCell>
+//                     <TableCell className="text-gray-600">{course.instructor || "-"}</TableCell>
 //                     <TableCell className="flex justify-end gap-2">
 //                       <Button size="sm" className="gap-1 bg-blue-600 hover:bg-blue-700 text-white">
 //                         <Eye className="h-4 w-4" /> View
 //                       </Button>
-//                       <Button size="sm" variant="outline" className="gap-1 border-gray-300 text-gray-700 hover:bg-gray-50">
-//                         <Share2 className="h-4 w-4" /> Share
-//                       </Button>
+//                       {course.isShareable ? (
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="gap-1 border-red-300 text-red-600 hover:bg-red-50"
+//                           onClick={() => revokeCertificate(course._id)}
+//                         >
+//                           Revoke
+//                         </Button>
+//                       ) : (
+//                         <Button
+//                           size="sm"
+//                           variant="outline"
+//                           className="gap-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+//                           onClick={() => shareCertificate(course._id, 86400)} // expiresIn = 1 day
+//                         >
+//                           <Share2 className="h-4 w-4" /> Share
+//                         </Button>
+//                       )}
 //                     </TableCell>
 //                   </TableRow>
 //                 ))}
@@ -110,7 +138,10 @@
 //             <h2 className="text-2xl font-semibold flex items-center gap-2 text-gray-800">
 //               <Users className="h-5 w-5 text-purple-600" /> Shared With Me
 //             </h2>
-//             <Button variant="outline" className="border-gray-300 hover:bg-gray-50 text-gray-700">
+//             <Button
+//               variant="outline"
+//               className="border-gray-300 hover:bg-gray-50 text-gray-700"
+//             >
 //               View All
 //             </Button>
 //           </div>
@@ -125,17 +156,14 @@
 //                 </TableRow>
 //               </TableHeader>
 //               <TableBody>
-//                 {sharedCourses.map((course, index) => (
-//                   <TableRow key={course.id} className="hover:bg-gray-50">
+//                 {sharedCertificates.map((course, index) => (
+//                   <TableRow key={course._id} className="hover:bg-gray-50">
 //                     <TableCell className="font-medium text-gray-800">{index + 1}</TableCell>
-//                     <TableCell className="text-gray-800">{course.name}</TableCell>
-//                     <TableCell className="text-gray-600">{course.sharedBy}</TableCell>
+//                     <TableCell className="text-gray-800">{course.courseName}</TableCell>
+//                     <TableCell className="text-gray-600">{course.sharedBy || "-"}</TableCell>
 //                     <TableCell className="flex justify-end gap-2">
 //                       <Button size="sm" className="gap-1 bg-purple-600 hover:bg-purple-700 text-white">
 //                         <Eye className="h-4 w-4" /> View
-//                       </Button>
-//                       <Button size="sm" variant="outline" className="gap-1 border-gray-300 text-gray-700 hover:bg-gray-50">
-//                         <Share2 className="h-4 w-4" /> Share
 //                       </Button>
 //                     </TableCell>
 //                   </TableRow>
@@ -146,10 +174,9 @@
 //         </section>
 //       </div>
 //     </div>
-//   )
+//   );
 // }
 
-/* eslint-disable no-unused-vars */
 import {
   Table,
   TableBody,
@@ -159,19 +186,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Share2, BookOpen, Users } from "lucide-react";
+import { Eye, Share2, BookOpen, Users, LogOut } from "lucide-react";
 import { useEffect } from "react";
 import { useStudentStore } from "../store/useStudentStore";
+import { useAuthStore } from "../store/useAuthStore";
+import { useNavigate } from "react-router-dom";
 
 export default function StudentDashboard() {
   const {
     certificates,
     fetchCertificates,
     user,
-    loading,
     shareCertificate,
     revokeCertificate,
   } = useStudentStore();
+
+  const { logout } = useAuthStore(); // <-- bring in logout from auth store
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user?.walletId) {
@@ -180,6 +211,11 @@ export default function StudentDashboard() {
   }, [user?.walletId, fetchCertificates]);
 
   const sharedCertificates = certificates.filter((cert) => cert.isShareable);
+
+  const handleLogout = () => {
+    logout(); // from useAuthStore
+    navigate("/login"); // redirect to login page
+  };
 
   return (
     <div className="min-h-screen w-full bg-[#f8fafc] p-6 text-gray-900">
@@ -194,6 +230,14 @@ export default function StudentDashboard() {
               Welcome back! Here are your current courses
             </p>
           </div>
+          <Button
+            variant="outline"
+            onClick={handleLogout}
+            className="gap-2 border-gray-300 text-gray-600 hover:bg-gray-100"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
         </header>
 
         {/* Stats Cards */}
@@ -205,7 +249,9 @@ export default function StudentDashboard() {
               </div>
               <div>
                 <h3 className="text-gray-500">My Courses</h3>
-                <p className="text-2xl font-bold text-gray-800">{certificates.length}</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  {certificates.length}
+                </p>
               </div>
             </div>
           </div>
@@ -216,7 +262,9 @@ export default function StudentDashboard() {
               </div>
               <div>
                 <h3 className="text-gray-500">Shared Courses</h3>
-                <p className="text-2xl font-bold text-gray-800">{sharedCertificates.length}</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  {sharedCertificates.length}
+                </p>
               </div>
             </div>
           </div>
@@ -248,9 +296,7 @@ export default function StudentDashboard() {
               <TableBody>
                 {certificates.map((course, index) => (
                   <TableRow key={course._id} className="hover:bg-gray-50">
-                    <TableCell className="font-medium text-gray-800">
-                      {index + 1}
-                    </TableCell>
+                    <TableCell className="font-medium text-gray-800">{index + 1}</TableCell>
                     <TableCell className="text-gray-800">{course.courseName}</TableCell>
                     <TableCell className="text-gray-600">{course.instructor || "-"}</TableCell>
                     <TableCell className="flex justify-end gap-2">
