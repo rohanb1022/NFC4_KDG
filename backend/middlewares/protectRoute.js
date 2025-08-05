@@ -1,12 +1,11 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import Student from "../models/student.model.js";
 
 dotenv.config();
 
 const protectRoute = async (req, res, next) => {
   try {
-    const token = req.cookies?.token;
+    const token = req.cookies.token;
     console.log("Token received:", token);
 
     if (!token) {
@@ -23,20 +22,14 @@ const protectRoute = async (req, res, next) => {
         .json({ success: false, message: "Unauthorized - Invalid token" });
     }
 
-    const student = await Student.findById(decoded.id).select("-password");
-    if (!student) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    }
-
-    req.student = student;
+    // ✅ Token is valid, move to next middleware
+    req.user = decoded; // Optional: attach token payload if needed later
     next();
   } catch (error) {
-    console.error("Error in protectRoute:", error.message);
+    console.error("Token verification error:", error.message);
     return res
-      .status(500)
-      .json({ success: false, message: "Internal server error" });
+      .status(401)
+      .json({ success: false, message: "Unauthorized - Invalid or expired token" });
   }
 };
 

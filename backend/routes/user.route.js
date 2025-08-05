@@ -17,7 +17,7 @@ router.post("/logout", logout);
 router.get("/authUser" ,checkAuth);
 
 // Get all courses by walletId
-router.get("/get-all/:walletId", protectRoute, async (req, res) => {
+router.get("/get-all/:walletId",protectRoute, async (req, res) => {
   const { walletId } = req.params;
   try {
     const certs = await Course.find({ studentWallet: walletId });

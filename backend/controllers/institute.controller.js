@@ -1,5 +1,5 @@
 import Student from "../models/student.model.js";
-import Course from "../models/course.model.js";
+import Course from "../models/Course.model.js";
 import fs from "fs";
 import crypto from "crypto";
 import { uploadToIPFS } from "../utils/ipfsUpload.js";
