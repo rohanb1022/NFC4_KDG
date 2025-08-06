@@ -22,6 +22,7 @@ router.get("/get-all/:walletId",protectRoute, async (req, res) => {
   try {
     const certs = await Course.find({ studentWallet: walletId });
     res.json(certs);
+    console.log(certs)
   } catch (error) {
     res.status(500).json({ message: "Error fetching courses" });
   }

@@ -1,3 +1,4 @@
+// /* eslint-disable no-unused-vars */
 // import {
 //   Table,
 //   TableBody,
@@ -7,27 +8,39 @@
 //   TableRow,
 // } from "@/components/ui/table";
 // import { Button } from "@/components/ui/button";
-// import { Eye, Share2, BookOpen, Users } from "lucide-react";
+// import { Eye, Share2, BookOpen, Users, LogOut } from "lucide-react";
 // import { useEffect } from "react";
 // import { useStudentStore } from "../store/useStudentStore";
+// import { useAuthStore } from "../store/useAuthStore";
+// import { useNavigate } from "react-router-dom";
 
 // export default function StudentDashboard() {
 //   const {
 //     certificates,
 //     fetchCertificates,
 //     user,
-//     loading,
 //     shareCertificate,
 //     revokeCertificate,
 //   } = useStudentStore();
 
-//   useEffect(() => {
-//     if (user?.walletId) {
-//       fetchCertificates(user.walletId);
-//     }
-//   }, [user?.walletId, fetchCertificates]);
+//   const walletId = localStorage.getItem("walletId")
+//   console.log(walletId)
+
+//   const { logout } = useAuthStore(); // <-- bring in logout from auth store
+//   const navigate = useNavigate();
+
+// useEffect(() => {
+//   if (walletId) {
+//     fetchCertificates(walletId);
+//   }
+// }, [walletId, fetchCertificates]);
 
 //   const sharedCertificates = certificates.filter((cert) => cert.isShareable);
+
+//   const handleLogout = () => {
+//     logout(); // from useAuthStore
+//     navigate("/login"); // redirect to login page
+//   };
 
 //   return (
 //     <div className="min-h-screen w-full bg-[#f8fafc] p-6 text-gray-900">
@@ -42,6 +55,14 @@
 //               Welcome back! Here are your current courses
 //             </p>
 //           </div>
+//           <Button
+//             variant="outline"
+//             onClick={handleLogout}
+//             className="gap-2 border-gray-300 text-gray-600 hover:bg-gray-100"
+//           >
+//             <LogOut className="h-4 w-4" />
+//             Logout
+//           </Button>
 //         </header>
 
 //         {/* Stats Cards */}
@@ -52,8 +73,10 @@
 //                 <BookOpen className="h-6 w-6 text-blue-600" />
 //               </div>
 //               <div>
-//                 <h3 className="text-gray-500">My Courses</h3>
-//                 <p className="text-2xl font-bold text-gray-800">{certificates.length}</p>
+//                 <h3 className="text-gray-500">My Certificates</h3>
+//                 <p className="text-2xl font-bold text-gray-800">
+//                   {certificates.length}
+//                 </p>
 //               </div>
 //             </div>
 //           </div>
@@ -63,8 +86,10 @@
 //                 <Users className="h-6 w-6 text-purple-600" />
 //               </div>
 //               <div>
-//                 <h3 className="text-gray-500">Shared Courses</h3>
-//                 <p className="text-2xl font-bold text-gray-800">{sharedCertificates.length}</p>
+//                 <h3 className="text-gray-500">Shared Certificates</h3>
+//                 <p className="text-2xl font-bold text-gray-800">
+//                   {sharedCertificates.length}
+//                 </p>
 //               </div>
 //             </div>
 //           </div>
@@ -74,7 +99,7 @@
 //         <section className="mb-12">
 //           <div className="flex items-center justify-between mb-4">
 //             <h2 className="text-2xl font-semibold flex items-center gap-2 text-gray-800">
-//               <BookOpen className="h-5 w-5 text-blue-600" /> My Courses
+//               <BookOpen className="h-5 w-5 text-blue-600" /> My Certificates
 //             </h2>
 //             <Button
 //               variant="outline"
@@ -96,9 +121,7 @@
 //               <TableBody>
 //                 {certificates.map((course, index) => (
 //                   <TableRow key={course._id} className="hover:bg-gray-50">
-//                     <TableCell className="font-medium text-gray-800">
-//                       {index + 1}
-//                     </TableCell>
+//                     <TableCell className="font-medium text-gray-800">{index + 1}</TableCell>
 //                     <TableCell className="text-gray-800">{course.courseName}</TableCell>
 //                     <TableCell className="text-gray-600">{course.instructor || "-"}</TableCell>
 //                     <TableCell className="flex justify-end gap-2">
@@ -177,6 +200,9 @@
 //   );
 // }
 
+
+
+/* eslint-disable no-unused-vars */
 import {
   Table,
   TableBody,
@@ -201,20 +227,30 @@ export default function StudentDashboard() {
     revokeCertificate,
   } = useStudentStore();
 
-  const { logout } = useAuthStore(); // <-- bring in logout from auth store
+  const walletId = localStorage.getItem("walletId");
+
+  const { logout } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user?.walletId) {
-      fetchCertificates(user.walletId);
+    if (walletId) {
+      fetchCertificates(walletId);
     }
-  }, [user?.walletId, fetchCertificates]);
+  }, [walletId, fetchCertificates]);
 
   const sharedCertificates = certificates.filter((cert) => cert.isShareable);
 
   const handleLogout = () => {
-    logout(); // from useAuthStore
-    navigate("/login"); // redirect to login page
+    logout();
+    navigate("/login");
+  };
+
+  const handleViewCertificate = (url) => {
+    if (url) {
+      window.open(url, "_blank");
+    } else {
+      alert("Certificate URL not available.");
+    }
   };
 
   return (
@@ -248,7 +284,7 @@ export default function StudentDashboard() {
                 <BookOpen className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-gray-500">My Courses</h3>
+                <h3 className="text-gray-500">My Certificates</h3>
                 <p className="text-2xl font-bold text-gray-800">
                   {certificates.length}
                 </p>
@@ -261,7 +297,7 @@ export default function StudentDashboard() {
                 <Users className="h-6 w-6 text-purple-600" />
               </div>
               <div>
-                <h3 className="text-gray-500">Shared Courses</h3>
+                <h3 className="text-gray-500">Shared Certificates</h3>
                 <p className="text-2xl font-bold text-gray-800">
                   {sharedCertificates.length}
                 </p>
@@ -270,11 +306,11 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        {/* My Courses Section */}
+        {/* My Certificates Section */}
         <section className="mb-12">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-semibold flex items-center gap-2 text-gray-800">
-              <BookOpen className="h-5 w-5 text-blue-600" /> My Courses
+              <BookOpen className="h-5 w-5 text-blue-600" /> My Certificates
             </h2>
             <Button
               variant="outline"
@@ -289,18 +325,26 @@ export default function StudentDashboard() {
                 <TableRow>
                   <TableHead className="w-[80px] text-gray-600">Sr No</TableHead>
                   <TableHead className="text-gray-600">Course</TableHead>
-                  <TableHead className="text-gray-600">Instructor</TableHead>
-                  <TableHead className="text-right text-gray-600">Actions</TableHead>
+                  <TableHead className="text-gray-600">Description</TableHead>
+                  <TableHead className=" text-gray-600">Degree</TableHead>
+                  <TableHead className=" text-gray-600">IssueDate</TableHead>
+                    
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {certificates.map((course, index) => (
                   <TableRow key={course._id} className="hover:bg-gray-50">
                     <TableCell className="font-medium text-gray-800">{index + 1}</TableCell>
-                    <TableCell className="text-gray-800">{course.courseName}</TableCell>
-                    <TableCell className="text-gray-600">{course.instructor || "-"}</TableCell>
+                    <TableCell className="text-gray-800">{course.name}</TableCell>
+                    <TableCell className="text-gray-600">{course.description}</TableCell>
+                    <TableCell className="text-gray-600">{course.degree}</TableCell>
+                    <TableCell className="text-gray-600">{course.issueDate}</TableCell>
                     <TableCell className="flex justify-end gap-2">
-                      <Button size="sm" className="gap-1 bg-blue-600 hover:bg-blue-700 text-white">
+                      <Button
+                        size="sm"
+                        className="gap-1 bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={() => handleViewCertificate(course.fileUrl)}
+                      >
                         <Eye className="h-4 w-4" /> View
                       </Button>
                       {course.isShareable ? (
@@ -334,7 +378,7 @@ export default function StudentDashboard() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-semibold flex items-center gap-2 text-gray-800">
-              <Users className="h-5 w-5 text-purple-600" /> Shared With Me
+              <Users className="h-5 w-5 text-purple-600" /> Shared By Me
             </h2>
             <Button
               variant="outline"
@@ -355,12 +399,17 @@ export default function StudentDashboard() {
               </TableHeader>
               <TableBody>
                 {sharedCertificates.map((course, index) => (
+                  
                   <TableRow key={course._id} className="hover:bg-gray-50">
                     <TableCell className="font-medium text-gray-800">{index + 1}</TableCell>
-                    <TableCell className="text-gray-800">{course.courseName}</TableCell>
+                    <TableCell className="text-gray-800">{course.name}</TableCell>
                     <TableCell className="text-gray-600">{course.sharedBy || "-"}</TableCell>
                     <TableCell className="flex justify-end gap-2">
-                      <Button size="sm" className="gap-1 bg-purple-600 hover:bg-purple-700 text-white">
+                      <Button
+                        size="sm"
+                        className="gap-1 bg-purple-600 hover:bg-purple-700 text-white"
+                        onClick={() => handleViewCertificate(course.fileUrl)}
+                      >
                         <Eye className="h-4 w-4" /> View
                       </Button>
                     </TableCell>

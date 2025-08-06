@@ -58,6 +58,7 @@ export async function signup(req, res) {
     res.status(201).json({
       sucess: true,
       message: "Account has been successfully created",
+      walletId : newStudent.walletId
     });
   } catch (error) {
     console.log("Error in signup controller:", error.message);
@@ -98,6 +99,7 @@ export async function login(req, res) {
     res.status(200).json({
       sucess: true,
       message: "Logged in successfully",
+      walletId : student.walletId
     });
   } catch (error) {
     console.log("Error in login controller:", error.message);

@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { create } from "zustand";
-import axios from "axios";
+import {axiosInstance} from "../lib/axios";
 
 const BASE_URL = "http://localhost:3000/api/v1/institute";
 
@@ -14,7 +14,7 @@ export const useInstitutionStore = create((set) => ({
   login: async (data) => {
     try {
       set({ loading: true });
-      const res = await axios.post(`${BASE_URL}/login`, data, { withCredentials: true });
+      const res = await axiosInstance.post(`${BASE_URL}/login`, data, { withCredentials: true });
       set({ currentInstitution: res.data, error: null });
       return { success: true };
     } catch (err) {
@@ -29,7 +29,7 @@ export const useInstitutionStore = create((set) => ({
   signup: async (data) => {
     try {
       set({ loading: true });
-      const res = await axios.post(`${BASE_URL}/signup`, data, { withCredentials: true });
+      const res = await axiosInstance.post(`${BASE_URL}/signup`, data, { withCredentials: true });
       set({ currentInstitution: res.data, error: null });
       return { success: true };
     } catch (err) {
@@ -43,7 +43,7 @@ export const useInstitutionStore = create((set) => ({
   // ✅ Logout
   logout: async () => {
     try {
-      await axios.post(`${BASE_URL}/logout`, {}, { withCredentials: true });
+      await axiosInstance.post(`${BASE_URL}/logout`, {}, { withCredentials: true });
       set({ currentInstitution: null });
     } catch (err) {
       console.error("Logout error:", err.message);
@@ -53,7 +53,7 @@ export const useInstitutionStore = create((set) => ({
   // ✅ Check Authentication
   checkAuth: async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/authUser`, { withCredentials: true });
+      const res = await axiosInstance.get(`${BASE_URL}/authUser`, { withCredentials: true });
       set({ currentInstitution: res.data });
     } catch (err) {
       set({ currentInstitution: null });
@@ -64,7 +64,7 @@ export const useInstitutionStore = create((set) => ({
   fetchStudents: async () => {
     try {
       set({ loading: true });
-      const res = await axios.get(`${BASE_URL}/all`, { withCredentials: true });
+      const res = await axiosInstance.get(`${BASE_URL}/all`, { withCredentials: true });
       set({ students: res.data });
     } catch (err) {
       set({ error: "Failed to fetch students" });
@@ -84,7 +84,7 @@ export const useInstitutionStore = create((set) => ({
       });
       formData.append("file", file);
 
-      const res = await axios.post(`${BASE_URL}/issue`, formData, {
+      const res = await axiosInstance.post(`${BASE_URL}/issue`, formData, {
         withCredentials: true,
         headers: {
           "Content-Type": "multipart/form-data"

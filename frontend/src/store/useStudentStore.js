@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import axios from "axios";
+import { axiosInstance } from "../lib/axios.js";
 
 export const useStudentStore = create((set) => ({
   certificates: [],
@@ -13,7 +13,7 @@ export const useStudentStore = create((set) => ({
   checkAuth: async () => {
     set({ authLoading: true });
     try {
-      const response = await axios.get("/api/v1/user/authUser", {
+      const response = await axiosInstance.get("/api/v1/user/authUser", {
         withCredentials: true,
       });
       set({ user: response.data, authLoading: false });
@@ -27,7 +27,7 @@ export const useStudentStore = create((set) => ({
   login: async (formData) => {
     set({ authLoading: true, error: null });
     try {
-      const response = await axios.post("/user/login", formData, {
+      const response = await axiosInstance.post("/user/login", formData, {
         withCredentials: true,
       });
       set({ user: response.data, authLoading: false });
@@ -45,7 +45,7 @@ export const useStudentStore = create((set) => ({
   signup: async (formData) => {
     set({ authLoading: true, error: null });
     try {
-      const response = await axios.post("/api/v1/user/signup", formData, {
+      const response = await axiosInstance.post("/api/v1/user/signup", formData, {
         withCredentials: true,
       });
       set({ user: response.data, authLoading: false });
@@ -63,7 +63,7 @@ export const useStudentStore = create((set) => ({
   logout: async () => {
     set({ authLoading: true });
     try {
-      await axios.post(
+      await axiosInstance.post(
         "/api/v1/user/logout",
         {},
         {
@@ -81,9 +81,10 @@ export const useStudentStore = create((set) => ({
   fetchCertificates: async (walletId) => {
     set({ loading: true, error: null });
     try {
-      const response = await axios.get(`/api/v1/user/get-all/${walletId}`, {
+      const response = await axiosInstance.get(`user/get-all/${walletId}`, {
         withCredentials: true,
       });
+      console.log("sending req to back: ",walletId)
       set({ certificates: response.data, loading: false });
     } catch (error) {
       console.error("Error fetching certificates:", error);
@@ -99,7 +100,7 @@ export const useStudentStore = create((set) => ({
   shareCertificate: async (courseId, expiresIn) => {
     set({ loading: true, error: null });
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `/api/v1/user/share/${courseId}`,
         { expiresIn },
         { withCredentials: true }
@@ -132,7 +133,7 @@ export const useStudentStore = create((set) => ({
   revokeCertificate: async (courseId) => {
     set({ loading: true, error: null });
     try {
-      await axios.post(
+      await axiosInstance.post(
         `/api/v1/user/revoke/${courseId}`,
         {},
         { withCredentials: true }

@@ -9,16 +9,18 @@ export const useAuthStore = create((set, get) => ({
   role: null,
   isAuthenticated: false,
   loading: false,
+  walletId : null,
 
   // STUDENT SIGNUP
   studentSignup: async (signupData) => {
     set({ loading: true });
     try {
       const res = await axiosInstance.post("/user/signup", signupData);
-      const { user, token } = res.data;
+      const { user, token , walletId} = res.data;
 
       localStorage.setItem("role", "student");
-      set({ user, token, role: "student", isAuthenticated: true });
+      localStorage.setItem("walletId", walletId);
+      set({ user, token, role: "student", isAuthenticated: true , walletId : walletId});
       toast.success("Student signup successful!");
       localStorage.setItem("token", token);
       return { success: true };
@@ -36,14 +38,17 @@ export const useAuthStore = create((set, get) => ({
     set({ loading: true });
     try {
       const res = await axiosInstance.post("/user/login", loginData);
-      const { user, token } = res.data;
+      const { user, token , walletId} = res.data;
 
       localStorage.setItem("role", "student");
       localStorage.setItem("token", token);
-      set({ user, token, role: "student", isAuthenticated: true });
+      localStorage.setItem("walletId", walletId);
+      console.log("storing wallet id in local:", walletId);
+      set({ user, token, role: "student", isAuthenticated: true , walletId : walletId});
       toast.success("Student login successful!");
       return { success: true };
     } catch (error) {
+
       console.error("Student login error:", error);
       toast.error(error.response?.data?.message || "Login failed");
       return { success: false };

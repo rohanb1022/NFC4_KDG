@@ -151,6 +151,7 @@ export const issueCertificate = async (req, res) => {
       name, // course name
       studentName,
       startDate,
+      degree,
       endDate,
       issueDate,
       expiryDate
@@ -162,6 +163,7 @@ export const issueCertificate = async (req, res) => {
       studentName,
       startDate,
       endDate,
+      degree,
       issueDate,
       expiryDate
     });
@@ -205,7 +207,7 @@ export const issueCertificate = async (req, res) => {
     const course = await Course.create({
       name,
       description: `Certificate for ${studentName}`,
-      degree: "",
+      degree,
       startDate,
       endDate,
       studentName,
