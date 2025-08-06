@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { User, GraduationCap, Building, Upload } from "lucide-react";
 import { useInstitutionStore } from "../store/useInstitutionStore";
+
 import axios from "axios";
 
 export default function InstituteDashboard() {
@@ -26,6 +27,7 @@ export default function InstituteDashboard() {
     issueDate: "",
     expiryDate: "",
   });
+ 
 
   const { fetchStudents, students } = useInstitutionStore();
 
@@ -38,6 +40,8 @@ export default function InstituteDashboard() {
       ? students
       : students.filter((student) => student.status === filterStatus);
 
+   
+
   return (
     <div className="min-h-screen w-full bg-[#f8fafc] p-6 text-gray-900">
       <div className="max-w-7xl mx-auto">
@@ -48,6 +52,7 @@ export default function InstituteDashboard() {
           <p className="text-gray-500">
             Administration portal for managing students and courses
           </p>
+           
         </header>
 
         <section className="mb-12">

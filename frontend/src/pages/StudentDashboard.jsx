@@ -46,6 +46,11 @@ export default function StudentDashboard() {
     }
   }, [walletId, fetchCertificates]);
 
+  // Debug selectedCertificate changes
+  useEffect(() => {
+    console.log("selectedCertificate changed:", selectedCertificate);
+  }, [selectedCertificate]);
+
   const sharedCertificates = certificates.filter((cert) => cert.isShareable);
 
   const handleLogout = () => {
@@ -62,12 +67,30 @@ export default function StudentDashboard() {
   };
 
   const handleShare = async (certificate) => {
+    console.log("Starting share process for certificate:", certificate);
     setSelectedCertificate(certificate);
     setIsSharing(true);
     try {
-      await shareCertificate(certificate._id, 24 * 60 * 60 * 1000); // 24 hours
+      const response = await shareCertificate(certificate._id, 24 * 60 * 60 * 1000); // 24 hours
+      console.log("Share response:", response);
+      
+      // Create the share link using the hash from the response
+      const shareLink = `${window.location.origin}/share/${response.link}`;
+      console.log("Generated share link:", shareLink);
+      
+      // Update the selected certificate with the share link
+      const updatedCertificate = {
+        ...certificate,
+        isShareable: true,
+        shareLink,
+        link: response.link
+      };
+      console.log("Updated certificate:", updatedCertificate);
+      
+      setSelectedCertificate(updatedCertificate);
       setIsShareDialogOpen(true);
     } catch (error) {
+      console.error("Share error:", error);
       toast.error("Failed to share certificate");
     } finally {
       setIsSharing(false);
@@ -95,22 +118,34 @@ export default function StudentDashboard() {
     
     setIsDeleting(true);
     try {
-      // Add delete functionality here if needed
+      await revokeCertificate(selectedCertificate._id);
       setIsDeleteDialogOpen(false);
       setSelectedCertificate(null);
-      toast.success("Certificate deleted successfully");
+      toast.success("Certificate revoked successfully");
     } catch (error) {
-      toast.error("Failed to delete certificate");
+      toast.error("Failed to revoke certificate");
     } finally {
       setIsDeleting(false);
     }
   };
 
   const copyToClipboard = async () => {
-    if (!selectedCertificate?.shareLink) return;
+    const linkToCopy = selectedCertificate?.shareLink;
+    if (!linkToCopy) {
+      toast.error("No shareable link available", {
+        duration: 2000,
+        position: "bottom-center",
+        style: {
+          background: "#EF4444",
+          color: "white",
+          border: "none",
+        },
+      });
+      return;
+    }
     
     try {
-      await navigator.clipboard.writeText(selectedCertificate.shareLink);
+      await navigator.clipboard.writeText(linkToCopy);
       toast.success("Shareable link copied to clipboard!", {
         duration: 2000,
         position: "bottom-center",
@@ -257,9 +292,13 @@ export default function StudentDashboard() {
                           size="sm"
                           variant="outline"
                           className="gap-1 border-red-300 text-red-600 hover:bg-red-50"
-                          onClick={() => {
-                            setSelectedCertificate(course);
-                            setIsDeleteDialogOpen(true);
+                          onClick={async () => {
+                            try {
+                              await revokeCertificate(course._id);
+                              toast.success("Certificate revoked successfully");
+                            } catch (error) {
+                              toast.error("Failed to revoke certificate");
+                            }
                           }}
                         >
                           Revoke
@@ -310,7 +349,7 @@ export default function StudentDashboard() {
                   <TableRow key={course._id} className="hover:bg-gray-50">
                     <TableCell className="font-medium text-gray-800">{index + 1}</TableCell>
                     <TableCell className="text-gray-800">{course.name}</TableCell>
-                    <TableCell className="text-gray-600">{course.sharedBy || "-"}</TableCell>
+                    <TableCell className="text-gray-600">{course.sharedBy || "Me"}</TableCell>
                     <TableCell className="flex justify-end gap-2">
                       <Button
                         size="sm"
@@ -341,8 +380,10 @@ export default function StudentDashboard() {
             <input
               type="text"
               value={selectedCertificate?.shareLink || ""}
+              placeholder={isSharing ? "Generating share link..." : "Share link will appear here"}
               readOnly
               className="flex-1 bg-transparent border-none outline-none text-sm font-mono"
+              onChange={(e) => console.log("Input value changed:", e.target.value)}
             />
             <Button
               variant="ghost"
@@ -350,6 +391,7 @@ export default function StudentDashboard() {
               onClick={copyToClipboard}
               className="hover:bg-background transition-colors"
               title="Copy to clipboard"
+              disabled={!selectedCertificate?.shareLink}
             >
               <Copy className="h-4 w-4" />
             </Button>

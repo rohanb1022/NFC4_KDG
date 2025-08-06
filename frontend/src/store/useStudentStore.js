@@ -100,13 +100,17 @@ export const useStudentStore = create((set) => ({
   shareCertificate: async (courseId, expiresIn) => {
     set({ loading: true, error: null });
     try {
+      console.log("Making share request for courseId:", courseId);
       const response = await axiosInstance.post(
         `/user/share/${courseId}`,
         { expiresIn },
         { withCredentials: true }
       );
+      console.log("Share API response:", response.data);
+      
       const { link } = response.data;
       const shareLink = `${window.location.origin}/share/${link}`;
+      console.log("Generated share link:", shareLink);
       
       set((state) => ({
         certificates: state.certificates.map((cert) =>
@@ -115,12 +119,15 @@ export const useStudentStore = create((set) => ({
                 ...cert,
                 isShareable: true,
                 shareLink,
+                link,
               }
             : cert
         ),
         loading: false,
         sharedLink: shareLink,
       }));
+      
+      return response.data; // Return the response for the component to use
     } catch (error) {
       console.error("Error sharing certificate:", error);
       set({
@@ -128,6 +135,7 @@ export const useStudentStore = create((set) => ({
         error:
           error?.response?.data?.message || "Failed to share certificate.",
       });
+      throw error; // Re-throw the error for the component to handle
     }
   },
 
