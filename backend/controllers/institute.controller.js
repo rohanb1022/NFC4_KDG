@@ -153,6 +153,7 @@ export const issueCertificate = async (req, res) => {
       startDate,
       endDate,
       issueDate,
+      
       expiryDate
     } = req.body;
 
@@ -171,6 +172,8 @@ export const issueCertificate = async (req, res) => {
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
+    const studentEmail = student.email; 
+    console.log("Student email:", studentEmail);
 
     // ✅ Validate uploaded file
     if (!req.file || !req.file.buffer) {
@@ -193,24 +196,24 @@ export const issueCertificate = async (req, res) => {
     // ✅ Step 2: send data chunks to n8n for processing
     console.log("🔄 Sending chunks to n8n for processing...");
     try {
-      const n8nResponse = await fetch("https://pakhu.app.n8n.cloud/webhook-test/4bbe899c-26b5-41db-8d3d-bfe7c6c06a22", {
+      const n8nResponse = await fetch("https://pakhu.app.n8n.cloud/webhook-test/c1a41643-5068-41d9-9ac4-f3aaa3016ac3", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          chunks: chunks,
+          chunks: chunkTexts,
+          studentemail: studentEmail
         })
       });
 
       const n8nResult = await n8nResponse.json();
       console.log("📊 n8n Response:", n8nResult);
 
-      if (!n8nResult.success && n8nResult.success !== true) {
+      if (n8nResult.response==='false') {
         return res.status(400).json({ 
-          message: "Certificate validation failed", 
-          error: "n8n processing returned false",
-          n8nResult: n8nResult 
+          message: "Certificate validation failed,an email has been sent to your email address", 
+          
         });
       }
 
