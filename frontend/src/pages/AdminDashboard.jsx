@@ -9,7 +9,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { User, GraduationCap, Building, Upload } from "lucide-react";
+import { User, GraduationCap, Building, Upload,LogOut } from "lucide-react";
+import { useAuthStore } from "../store/useAuthStore";
 import { useInstitutionStore } from "../store/useInstitutionStore";
 
 import axios from "axios";
@@ -27,7 +28,7 @@ export default function InstituteDashboard() {
     issueDate: "",
     expiryDate: "",
   });
- 
+ const { logout } = useAuthStore();
 
   const { fetchStudents, students } = useInstitutionStore();
 
@@ -40,18 +41,32 @@ export default function InstituteDashboard() {
       ? students
       : students.filter((student) => student.status === filterStatus);
 
+      const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
    
 
   return (
     <div className="min-h-screen w-full bg-[#f8fafc] p-6 text-gray-900">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-8">
+        <header className="mb-8 flex flex-row items-center justify-between">
+          <div>
           <h1 className="text-3xl font-bold mb-2 flex items-center gap-3 justify-center text-gray-800">
             <Building className="h-9 w-9 text-blue-600" /> Institute Dashboard
           </h1>
           <p className="text-gray-500">
             Administration portal for managing students and courses
           </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={handleLogout}
+            className="gap-2 ml-5 border-gray-300 text-gray-600 hover:bg-gray-100"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
            
         </header>
 
