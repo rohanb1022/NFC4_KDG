@@ -217,6 +217,9 @@ import { useEffect } from "react";
 import { useStudentStore } from "../store/useStudentStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment, useState } from "react";
+import { QRCodeCanvas } from "qrcode.react";
 
 export default function StudentDashboard() {
   const {
@@ -252,6 +255,20 @@ export default function StudentDashboard() {
       alert("Certificate URL not available.");
     }
   };
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+const [selectedCertificate, setSelectedCertificate] = useState(null);
+
+const handleShare = (certificate) => {
+  
+  setSelectedCertificate(certificate);
+  setIsModalOpen(true);
+};
+
+const closeModal = () => {
+  setIsModalOpen(false);
+  setSelectedCertificate(null);
+};
 
   return (
     <div className="min-h-screen w-full bg-[#f8fafc] p-6 text-gray-900">
@@ -348,14 +365,12 @@ export default function StudentDashboard() {
                         <Eye className="h-4 w-4" /> View
                       </Button>
                       {course.isShareable ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="gap-1 border-red-300 text-red-600 hover:bg-red-50"
-                          onClick={() => revokeCertificate(course._id)}
-                        >
-                          Revoke
-                        </Button>
+                        <button
+  onClick={() => handleShare(course._id)}
+  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-all"
+>
+  Revoke
+</button>
                       ) : (
                         <Button
                           size="sm"
@@ -412,6 +427,75 @@ export default function StudentDashboard() {
                       >
                         <Eye className="h-4 w-4" /> View
                       </Button>
+                      <Transition appear show={isModalOpen} as={Fragment}>
+  <Dialog as="div" className="relative z-10" onClose={closeModal}>
+    <Transition.Child
+      as={Fragment}
+      enter="ease-out duration-300"
+      enterFrom="opacity-0"
+      enterTo="opacity-100"
+      leave="ease-in duration-200"
+      leaveFrom="opacity-100"
+      leaveTo="opacity-0"
+    >
+      <div className="fixed inset-0 bg-black bg-opacity-25" />
+    </Transition.Child>
+
+    <div className="fixed inset-0 overflow-y-auto">
+      <div className="flex min-h-full items-center justify-center p-4 text-center">
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0 scale-95"
+          enterTo="opacity-100 scale-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100 scale-100"
+          leaveTo="opacity-0 scale-95"
+        >
+          <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+            <Dialog.Title
+              as="h3"
+              className="text-lg font-medium leading-6 text-gray-900"
+            >
+              Share Certificate
+            </Dialog.Title>
+
+            {selectedCertificate?.fileUrl ? (
+              <div className="mt-4 space-y-4">
+                <QRCodeCanvas value={selectedCertificate.fileUrl} size={200} />
+                <p className="text-sm text-gray-500 break-all">
+                  {selectedCertificate.fileUrl}
+                </p>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(selectedCertificate.fileUrl);
+                    toast.success("Link copied to clipboard!");
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded"
+                >
+                  Copy Link
+                </button>
+              </div>
+            ) : (
+              <p className="text-red-500">Certificate URL not available.</p>
+            )}
+
+            <div className="mt-4">
+              <button
+                type="button"
+                className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                onClick={closeModal}
+              >
+                Close
+              </button>
+            </div>
+          </Dialog.Panel>
+        </Transition.Child>
+      </div>
+    </div>
+  </Dialog>
+</Transition>
+
                     </TableCell>
                   </TableRow>
                 ))}

@@ -101,7 +101,7 @@ export const useStudentStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await axiosInstance.post(
-        `/api/v1/user/share/${courseId}`,
+        `/user/share/${courseId}`,
         { expiresIn },
         { withCredentials: true }
       );
