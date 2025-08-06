@@ -154,6 +154,7 @@ export const issueCertificate = async (req, res) => {
       degree,
       endDate,
       issueDate,
+      
       expiryDate
     } = req.body;
 
@@ -173,6 +174,8 @@ export const issueCertificate = async (req, res) => {
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
+    const studentEmail = student.email; 
+    console.log("Student email:", studentEmail);
 
     // ✅ Validate uploaded file
     if (!req.file || !req.file.buffer) {
@@ -187,11 +190,43 @@ export const issueCertificate = async (req, res) => {
     );
     
     console.log("✅ PDF chunks created:");
-    console.log(`📊 Collection Name: ${collectionName}`);
+    //console.log(`📊 Collection Name: ${collectionName}`);
     //console.log(`📊 Total Chunks: ${totalChunks}`);
     //console.log(`📊 Chunk Texts:`, chunkTexts);
-    //console.log(`📊 Original Chunks:`, chunks);
+    console.log(`📊 Original Chunks:`, chunks);
 
+    // ✅ Step 2: send data chunks to n8n for processing
+    console.log("🔄 Sending chunks to n8n for processing...");
+    try {
+      const n8nResponse = await fetch("https://pakhu.app.n8n.cloud/webhook-test/c1a41643-5068-41d9-9ac4-f3aaa3016ac3", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chunks: chunkTexts,
+          studentemail: studentEmail
+        })
+      });
+
+      const n8nResult = await n8nResponse.json();
+      console.log("📊 n8n Response:", n8nResult);
+
+      if (n8nResult.response==='false') {
+        return res.status(400).json({ 
+          message: "Certificate validation failed,an email has been sent to your email address", 
+          
+        });
+      }
+
+      console.log("✅ n8n processing successful, continuing with certificate issuance...");
+    } catch (n8nError) {
+      console.error("❌ Error calling n8n webhook:", n8nError);
+      return res.status(500).json({ 
+        message: "Failed to validate certificate with n8n", 
+        error: n8nError.message 
+      });
+    }
 
     // ✅ Hash the uploaded PDF
     const buffer = req.file.buffer;
