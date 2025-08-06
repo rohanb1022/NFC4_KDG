@@ -33,14 +33,14 @@ const InstitutionSignup = () => {
         placeholder="Institution Name"
         value={formData.name}
         onChange={handleChange}
-        className="p-2 rounded border border-white bg-transparent text-white"
+        className="p-2 rounded border border-gray-300 bg-transparent text-black"
       />
       <input
         name="email"
         placeholder="Email"
         value={formData.email}
         onChange={handleChange}
-        className="p-2 rounded border border-white bg-transparent text-white"
+        className="p-2 rounded border border-gray-300 bg-transparent text-black"
       />
       <input
         name="password"
@@ -48,11 +48,11 @@ const InstitutionSignup = () => {
         placeholder="Password"
         value={formData.password}
         onChange={handleChange}
-        className="p-2 rounded border border-white bg-transparent text-white"
+        className="p-2 rounded border border-gray-300 bg-transparent text-black"
       />
       <button
         type="submit"
-        className="py-2 px-4 bg-white text-black rounded hover:bg-gray-200 transition"
+        className="py-2 px-4 bg-black text-white rounded hover:bg-gray-600 transition"
       >
         Submit
       </button>

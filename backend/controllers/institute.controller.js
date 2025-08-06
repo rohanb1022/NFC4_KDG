@@ -284,3 +284,151 @@ export const getStudentByWallet = async (req, res) => {
   }
 };
 
+export const bulkUploadCertificates = async (req, res) => {
+  try {
+    const { certificates } = req.body; // Array of certificate data
+    const files = req.files; // Array of uploaded files
+
+    if (!certificates || !Array.isArray(certificates) || certificates.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "No certificates data provided" 
+      });
+    }
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "No files uploaded" 
+      });
+    }
+
+    if (certificates.length !== files.length) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Number of certificates and files must match" 
+      });
+    }
+
+    const results = [];
+    const errors = [];
+
+    // Process each certificate
+    for (let i = 0; i < certificates.length; i++) {
+      try {
+        const certificateData = certificates[i];
+        const file = files[i];
+
+        const {
+          walletId,
+          name, // course name
+          studentName,
+          startDate,
+          degree,
+          endDate,
+          issueDate,
+          expiryDate
+        } = certificateData;
+
+        console.log(`Processing certificate ${i + 1}/${certificates.length} for wallet: ${walletId}`);
+
+        // Validate student exists
+        const student = await Student.findOne({ walletId });
+        if (!student) {
+          errors.push({
+            index: i,
+            walletId,
+            error: "Student not found"
+          });
+          continue;
+        }
+
+        // Validate file
+        if (!file || !file.buffer) {
+          errors.push({
+            index: i,
+            walletId,
+            error: "No file uploaded"
+          });
+          continue;
+        }
+
+        // Step 1: Chunk + store in vector DB
+        console.log(`🔄 Starting PDF chunking for ${walletId}...`);
+        const { chunkTexts, collectionName, totalChunks, chunks } = await chunkAndStorePDF(
+          file.buffer,
+          walletId
+        );
+        
+        console.log(`✅ PDF chunks created for ${walletId}:`, chunks.length);
+
+        // Step 2: Hash the uploaded PDF
+        const buffer = file.buffer;
+        const hash = crypto.createHash("sha256").update(buffer).digest("hex");
+
+        // Step 3: Upload file to IPFS
+        const fileUrl = await uploadToIPFS(buffer, file.originalname);
+
+        // Step 4: Store hash on Solana
+        const { tx, certAccount } = await storeHashOnSolana(hash, name, walletId);
+
+        // Step 5: Save to MongoDB
+        const course = await Course.create({
+          name,
+          description: `Certificate for ${studentName}`,
+          degree,
+          startDate,
+          endDate,
+          studentName,
+          issueDate,
+          expiryDate,
+          studentWallet: walletId,
+          fileUrl,
+          hash,
+          solanaTx: tx,
+          solanaCertAddress: certAccount,
+          isShareable: false
+        });
+
+        results.push({
+          index: i,
+          walletId,
+          success: true,
+          course
+        });
+
+        console.log(`✅ Certificate issued successfully for ${walletId}`);
+
+      } catch (error) {
+        console.error(`❌ Error processing certificate ${i + 1}:`, error);
+        errors.push({
+          index: i,
+          walletId: certificates[i]?.walletId || 'unknown',
+          error: error.message
+        });
+      }
+    }
+
+    // Return results
+    res.status(200).json({
+      success: true,
+      message: `Bulk upload completed. ${results.length} successful, ${errors.length} failed`,
+      results,
+      errors,
+      summary: {
+        total: certificates.length,
+        successful: results.length,
+        failed: errors.length
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Error in bulk upload:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal server error",
+      error: error.message 
+    });
+  }
+};
+

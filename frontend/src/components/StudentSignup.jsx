@@ -126,14 +126,14 @@ const StudentSignup = () => {
         placeholder="Name"
         value={formData.name}
         onChange={handleChange}
-        className="p-2 rounded border border-white bg-transparent text-white"
+        className="p-2 rounded border border-gray-300 bg-transparent text-black"
       />
       <input
         name="email"
         placeholder="Email"
         value={formData.email}
         onChange={handleChange}
-        className="p-2 rounded border border-white bg-transparent text-white"
+        className="p-2 rounded border border-gray-300 bg-transparent text-black"
       />
       <input
         name="password"
@@ -141,7 +141,7 @@ const StudentSignup = () => {
         placeholder="Password"
         value={formData.password}
         onChange={handleChange}
-        className="p-2 rounded border border-white bg-transparent text-white"
+        className="p-2 rounded border border-gray-300 bg-transparent text-black"
       />
 
       {/* Wallet connect button (not submit type) */}
@@ -151,7 +151,7 @@ const StudentSignup = () => {
 
       <button
         type="submit"
-        className="py-2 px-4 bg-white text-black rounded hover:bg-gray-200 transition"
+        className="py-2 px-4 bg-yellow-500 text-black rounded hover:bg-yellow-800 transition"
       >
         Submit
       </button>
