@@ -75,5 +75,26 @@ router.post("/revoke/:courseId", protectRoute, async (req, res) => {
   }
 });
 
+// Get shared certificate by hash
+router.get("/shared/:hash", async (req, res) => {
+  const { hash } = req.params;
+  
+  try {
+    const certificate = await Course.findOne({ 
+      link: hash, 
+      isShareable: true,
+      "shareWindow.to": { $gt: new Date() }
+    });
+    
+    if (!certificate) {
+      return res.status(404).json({ message: "Certificate not found or access has been revoked" });
+    }
+    
+    res.json(certificate);
+  } catch (error) {
+    console.error("Error fetching shared certificate:", error);
+    res.status(500).json({ message: "Error fetching certificate" });
+  }
+});
 
 export default router;

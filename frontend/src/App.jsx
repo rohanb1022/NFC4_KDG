@@ -10,6 +10,7 @@ import StudentDashboard from "./pages/StudentDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Employer from "./pages/Employer";
 import LandingPage from "./LandingPage";
+import SharePage from "./pages/SharePage";
 import { useAuthStore } from "./store/useAuthStore";
 
 export default function App() {
@@ -36,7 +37,8 @@ export default function App() {
       if (
         location.pathname !== "/" &&
         !location.pathname.startsWith("/auth") &&
-        !location.pathname.startsWith("/Employer")
+        !location.pathname.startsWith("/Employer") &&
+        !location.pathname.startsWith("/share")
       ) {
         navigate("/auth");
       }
@@ -51,6 +53,7 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/Employer/*" element={<Employer />} />
+        <Route path="/share/:hash" element={<SharePage />} />
 
         {/* Protected Student Dashboard */}
         <Route

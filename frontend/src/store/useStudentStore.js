@@ -106,18 +106,20 @@ export const useStudentStore = create((set) => ({
         { withCredentials: true }
       );
       const { link } = response.data;
+      const shareLink = `${window.location.origin}/share/${link}`;
+      
       set((state) => ({
         certificates: state.certificates.map((cert) =>
           cert._id === courseId
             ? {
                 ...cert,
                 isShareable: true,
-                link,
+                shareLink,
               }
             : cert
         ),
         loading: false,
-        sharedLink: link,
+        sharedLink: shareLink,
       }));
     } catch (error) {
       console.error("Error sharing certificate:", error);
@@ -134,7 +136,7 @@ export const useStudentStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       await axiosInstance.post(
-        `/api/v1/user/revoke/${courseId}`,
+        `/user/revoke/${courseId}`,
         {},
         { withCredentials: true }
       );
@@ -144,7 +146,7 @@ export const useStudentStore = create((set) => ({
             ? {
                 ...cert,
                 isShareable: false,
-                link: null,
+                shareLink: null,
               }
             : cert
         ),
